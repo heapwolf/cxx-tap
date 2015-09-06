@@ -6,7 +6,6 @@ int main() {
 
   Tap t;
 
-
   t.test("test1", [&](auto t) {
     t.ok(true, "true is true");
     t.end();
@@ -18,7 +17,10 @@ int main() {
       t.ok();
     });
 
-    t.ok(false, "false is true");
+    float a = 2.23;
+    int b = 2;
+
+    t.equal(a, b, "a float is not an int");
   });
 }
 

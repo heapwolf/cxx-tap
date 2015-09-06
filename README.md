@@ -6,24 +6,31 @@ Test Anything Protocol for C++ inspired by [`tape`][0].
 
 # EXAMPLE
 ```cpp
-#include "tap.h"
+#include "../tap.h"
+
 using namespace TAP;
 
-Tap t;
+int main() {
 
-t.test("test1", [&](auto t) {
-  t.ok(true, "true is true");
-  t.end();
-});
+  Tap t;
 
-t.test("test2", [&](auto t) {
-
-  t.test("test2a", [&](auto t) {
-    t.ok();
+  t.test("test1", [&](auto t) {
+    t.ok(true, "true is true");
+    t.end();
   });
 
-  t.ok(false, "false is true");
-});
+  t.test("test2", [&](auto t) {
+
+    t.test("test2a", [&](auto t) {
+      t.ok();
+    });
+
+    float a = 2.23;
+    int b = 2;
+
+    t.equal(a, b, "a float is not an int");
+  });
+}
 ```
 
 ```
@@ -33,11 +40,11 @@ ok 2 true is true
 # test2
 # test2a
 ok 5 (unnamed assert)
-not ok 6 false is true
+not ok 6 a float is not an int
   ---
-    operator: ok
-    expected: true
-    actual:   false
+    operator: equal
+    expected: 2
+    actual:   2.23
   ...
 
 1..6
