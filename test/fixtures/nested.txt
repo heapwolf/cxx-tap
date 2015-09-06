@@ -1,0 +1,19 @@
+TAP version 13
+# test1
+ok 2 true is true
+# test2
+# test2a
+# test2b
+ok 6 (unnamed assert)
+ok 7 (unnamed assert)
+not ok 8 false is true
+  ---
+    operator: ok
+    expected: true
+    actual:   false
+  ...
+not ok 8 plan != count
+  ---
+    operator: fail
+    expected: 0
+    actual:   8

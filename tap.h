@@ -44,10 +44,11 @@ namespace TAP {
         runtime_error(s) {}
   };
 
-  //
+  class Test;
+  class ResultsRenderer;
+
   //
   // TODO
-  // Break-out test functions into test.h
   // 
   struct BaseOptions {
     string name;
@@ -60,6 +61,7 @@ namespace TAP {
     bool ok = false;
     bool bail = false;
     bool exiting = false;
+    int count = 0;
     int id = 0;
     int timeout = 4000;
     int todo = -1;
@@ -71,24 +73,33 @@ namespace TAP {
     BaseOptions extra;
   };
 
+  struct Results {
+    int count = 0;
+    int pass = 0;
+    int fail = 0;
+
+    int plan = 0;
+    int assertCount = 0;
+    bool planError = false;
+  };
+
   class Test : public EventEmitter {
 
-    vector<Test*> progeny;
+    vector<Test> progeny;
 
     int _skip = false;
-    int _plan = -1;
     int assertCount = 0;
     int pendingCount = 0;
 
     bool _ok = true;
     bool _planError = false;
     bool calledEnd = false;
+    bool hasCallback = false;
     bool ended = false;
 
     void _end(Error);
     void _end();
-    
-    
+
     int _pendingAsserts();
     
     void _assert(bool, Options);
@@ -103,17 +114,18 @@ namespace TAP {
 
     public:
 
+      int _plan = 0;
       bool watched = false;
       void run();
-      void quit();
+      //void quit();
 
-      template<typename Callback>
-      void test(const string&, Callback);
+      template<typename Lambda>
+      void test(const string&, Lambda);
 
-      template<typename Callback>
-      void test(const string&, Options, Callback);
+      template<typename Lambda>
+      void test(const string&, Options, Lambda);
 
-      void test(Test);
+      void _test(Test);
 
       void comment(const string&);
       void plan(int);
@@ -158,10 +170,21 @@ namespace TAP {
       void end(Error);
       void end();
 
-      string name = "(anonymous)";
+      string name;
       Options opts;
       function<void(Test)> _cb;
-      function<void(Test*)> resultsWatcher;
+
+      Test() {}
+
+      template<typename Lambda>
+      Test(const string& s, Options o, Lambda lambda) :
+        name(s),
+        opts(o),
+        _cb(lambda)
+      {
+        hasCallback = true;
+        Options opts;
+      }
   };
 
   void Test::run() {
@@ -170,46 +193,43 @@ namespace TAP {
       return;
     }
 
-    this->emit("prerun");
-    this->_cb(*this);
+    this->emit("prerun", this);
+    if (this->hasCallback) {
+      this->_cb(*this);
+    }
     this->emit("run");
   }
 
   template<typename Callback>
   void Test::test(const string& name, Callback cb) {
     Options opts;
-    return this->test(name, opts, cb);
+    this->test(name, opts, cb);
   }
 
   template<typename Callback>
   void Test::test(const string& name, Options opts, Callback cb) {
 
-    Test t;
-    t.name = name;
-    t.opts = opts;
-    t._cb = cb;
-
-    this->test(t);
+    Test t(name, opts, cb);
+    this->_test(t);
   }
 
-  void Test::test(Test t) {
-
-    this->resultsWatcher(&t);
-    t.resultsWatcher = this->resultsWatcher;
+  void Test::_test(Test t) {
 
     this->pendingCount++;
-    this->progeny.push_back(&t);
-    this->emit("test", t);
 
     t.on("prerun", [&]() {
       this->assertCount++;
     });
 
-    if (this->_pendingAsserts() <= 0) {
+    this->emit("test", &t);
+
+    this->progeny.push_back(t);
+
+    if (!this->_pendingAsserts()) {
       this->_end();
     }
 
-    if (this->_plan < 1 && this->pendingCount == this->progeny.size()) {
+    if (this->_plan == 0 && this->pendingCount == this->progeny.size()) {
       this->_end();
     }
   }
@@ -222,7 +242,7 @@ namespace TAP {
 
     opts.comment = regex_replace(msg, makeComment, string(""));
     opts.comment = regex_replace(opts.comment, makeTrim, string(""));
-    this->emit("results", opts);
+    this->emit("results", &opts);
   }
 
   void Test::plan(int n) {
@@ -244,11 +264,9 @@ namespace TAP {
     });
   }
 
-  void Test::_end() {
-    Error err;
-    this->_end(err);
-  }
-
+  //
+  // end()
+  //
   void Test::end() {
     Error err;
     this->end(err);
@@ -259,7 +277,7 @@ namespace TAP {
     if (err) {
       this->error(err);
     }
-    
+
     if (this->calledEnd) {
       this->fail(".end() called twice");
     }
@@ -268,31 +286,39 @@ namespace TAP {
     this->_end();
   }
 
+  //
+  // _end();
+  //
+  void Test::_end() {
+    Error err;
+    this->_end(err);
+  }
+
   void Test::_end(Error err) {
 
     if (this->progeny.size() > 0) {
 
-      // shift off the first element as `t`
-      auto t = this->progeny[0];
+      auto t = this->progeny.front();
       this->progeny.erase(this->progeny.begin());
 
-      t->on("end", [&]() { 
+      t.on("end", [&]() { 
         this->_end();
-        this->pendingCount--;
       });
 
-      t->run();
+      t.run();
       return;
     }
 
-    if (!this->ended && this->pendingCount == 0) { 
+    if (!this->ended) { 
       this->emit("end");
     }
 
     int pendingAsserts = this->_pendingAsserts();
 
-    if (!this->_planError && this->_plan > -1 && pendingAsserts > 0) {
+    if (!this->_planError && this->_plan != 0 && pendingAsserts > 0) {
       this->_planError = true;
+
+      cout << "FAIL" << endl;
 
       Options o;
       o.expected = this->_plan;
@@ -303,33 +329,14 @@ namespace TAP {
     this->ended = true;
   }
 
-  void Test::quit() {
-
-    Options o;
-
-    if (this->_plan > -1 &&
-      !this->_planError && this->assertCount != this->_plan) {
-      this->_planError = true;
-
-      o.expected = this->_plan;
-      o.actual = to_string(this->assertCount);
-      o.exiting = true;
-
-      this->fail("plan != count", o);
-    }
-    else if (!this->ended) {
-
-      o.exiting = true;
-      this->fail("test exited without ending", o);
-    }
-  }
-
   int Test::_pendingAsserts() {
-    if (this->_plan == -1) {
-      return 1;
+    if (this->_plan == 0) {
+      return 0;
     }
     else {
-      return this->_plan - (this->progeny.size() + this->assertCount);
+      int len = this->progeny.size();
+      int i = this->_plan - (len + this->assertCount);
+      return i;
     }
   }
 
@@ -373,7 +380,7 @@ namespace TAP {
 
     //
     // TODO
-    // Report some more information about the failed assertion.
+    // Report some more information about the       cout << "FAIL" << endl;failed assertion.
     // 
     // if (!ok) {
     //   res.exceptionDetails
@@ -384,7 +391,7 @@ namespace TAP {
     //   res.at
     // }
 
-    this->emit("results", res);
+    this->emit("results", &res);
 
     int pendingAsserts = this->_pendingAsserts();
 
@@ -588,115 +595,114 @@ namespace TAP {
     this->_assert(!err, o);
   }
 
+  static Results r;
+
   //
   // RESULTS
-  // TODO
-  // Break-out results into results.h
   //
-  class Results : public EventEmitter {
+  class ResultsRenderer : public EventEmitter {
 
-    string _only;
-    
     public:
-      int count = 0;
-      int fail = 0;
-      int pass = 0;
       bool first = true;
-      bool closed = false;
-      vector<Test*> tests;
 
-      void push(Test&);
-      void only(const string&);
-      void _watch(Test&);
-      string encodeResult(Options, int);
-      void close(int count, int pass, int fail);
+      string padding_outer = "  ";
+      string padding_inner = padding_outer + "  ";
+
+      string encodeResult(Options*, int);
+      void close(Results);
+      void watch(Test*);
+
+      ResultsRenderer() {
+
+        this->on("plan", [&](int n) {
+          r.plan = n;
+        });
+
+        static function<void()> onProcessExit;
+
+        onProcessExit = [&]() {
+          this->close(r);
+        };
+
+        atexit([]{
+          onProcessExit();
+        });
+      }
   };
 
-  void Results::push(Test& t) {
-    t.watched = true;
-    this->tests.push_back(&t);
-    this->_watch(t);
-    this->emit("_push", t);
-  }
+  void ResultsRenderer::watch(Test* t) {
 
-  /* void Results::only(const string& name) {
-    if (!this->_only.empty()) {
-      this->count++;
-      this->fail++;
-      cout
-        << "not ok " 
-        << this->count 
-        << " already called .only()" 
-        << endl;
-    }
-    this->_only = name;
-  }*/
+    t->watched = true;
 
-  void Results::_watch(Test& t) {
+    //cout << "Watching " << t->name << endl;
 
-    t.on("prerun", [&]() {
+    t->on("plan", [&](int n) {
+      r.plan += n;
+    });
+
+    t->on("prerun", [&](Test* t) {
       if (first) {
         first = false;
         cout << "TAP version 13" << endl;
       }
-      cout << "# " << t.name << endl;
+      cout << "# " << t->name << endl;
+      ++r.count;
     });
 
-    t.on("results", [&](Options res) {
+    t->on("results", [&](Options* res) {
 
-      if (!res.comment.empty()) {
-        cout << "# " << res.comment << endl;
+      if (!res->comment.empty()) {
+        cout << "# " << res->comment << endl;
         return;
       }
-      cout << this->encodeResult(res, this->count + 1);
-      this->count++;
 
-      if (res.ok) {
-        this->pass++;
+      res->count = ++r.count;
+
+      cout << this->encodeResult(res, r.count);
+
+      if (res->ok) {
+        r.pass++;
       }
       else {
-        this->fail++;
+        r.fail++;
       }
+
     });
 
-    t.on("results", [&](Options res) {  
-      this->emit("update", *this);
-    });
-
-    t.on("test", [&](Test st) { 
-      this->_watch(st); 
+    t->on("test", [&](Test* st) {
+      this->watch(st);
     });
   }
 
-  string Results::encodeResult(Options res, int count) {
+  string ResultsRenderer::encodeResult(Options* res, int count) {
 
     string output = "";
 
-    output += (res.ok ? "ok " : "not ok ") + to_string(count);
-    output += !res.name.empty() ? " " + res.name : "";
+    output += (res->ok ? "ok " : "not ok ") + to_string(count);
+    output += !res->name.empty() ? " " + res->name : "";
 
-    if (res.skip > -1) output += " # SKIP";
-    else if (res.todo > -1) output += " # TODO";
+    if (res->skip > -1) output += " # SKIP";
+    else if (res->todo > -1) output += " # TODO";
   
     output += "\n";
-    if (res.ok) return output;
+    if (res->ok) return output;
 
-    string outer = "  ";
-    string inner = outer + "  ";
-    output += outer + "---\n";
-    output += inner + "operator: " + res.oper + "\n";
+    output += padding_outer + "---\n";
+    output += padding_inner + "operator: " + res->oper + "\n";
 
-    if (!res.expected.empty() || !res.actual.empty()) {
+    if (!res->expected.empty() || !res->actual.empty()) {
 
-      string ex = !res.expected.empty() ? res.expected : "";
-      string ac = !res.actual.empty() ? res.actual : "";
+      string ex = !res->expected.empty() ? res->expected : "";
+      string ac = !res->actual.empty() ? res->actual : "";
   
       if (max(ex.size(), ac.size()) > 65) {
-        output += inner + "expected: |-\n" + inner + "  " + ex + "\n";
-        output += inner + "actual: |-\n" + inner + "  " + ac + "\n";
+        output += padding_inner + "expected: |-\n" + 
+          padding_inner + "  " + ex + "\n";
+        output += padding_inner + "actual: |-\n" + 
+          padding_inner + "  " + ac + "\n";
       } else {
-        output += inner + "expected: " + ex + "\n";
-        output += inner + "actual:   " + ac + "\n";
+        output += padding_inner + "expected: " + ex + "\n";
+        output += padding_inner + "actual:   " + ac + "\n";
       }
     }
 
@@ -704,90 +710,82 @@ namespace TAP {
     //    output += inner + "at: " + res.at + "\n";
     //}
 
-    if (res.oper == "error" && res.error) {
+    if (res->oper == "error" && res->error) {
 
-      output += inner + "exception: |-\n" + 
-        inner + "  " + res.error.message;
+      output += padding_inner + "exception: |-\n" + 
+        padding_inner + "  " + res->error.message;
 
       //for (int i = 0; i < lines.length(); i++) {
       //    output += inner + "  " + lines[i] + "\n";
       //}
     }
 
-    output += outer + "...\n";
+    output += padding_outer + "...\n";
     return output + "";
   }
 
-  void Results::close(int count, int pass, int fail) {
+  void ResultsRenderer::close(Results r) {
+
+    if (r.plan != r.count) {
+
+      string output = "";
+      
+      output += "not ok " + to_string(r.count) + " plan != count\n";
+      output += padding_outer + "---\n";
+      output += padding_inner + "operator: fail\n";
+      output += padding_inner + "expected: " + to_string(r.plan) + "\n";
+      output += padding_inner + "actual:   " + to_string(r.count) + "\n";
+      cout << output;
+      return;
+    }
 
     cout
       << endl
-      << "1.." << count << endl
-      << "# tests " << count << endl
-      << "# pass  " << pass << endl;
+      << "1.." << r.count << endl
+      << "# tests " << r.count << endl
+      << "# pass  " << r.pass << endl;
 
-    if (fail) {
-      cerr << "# fail  " << fail << endl;
+    if (r.fail) {
+      cout << "# fail  " << r.fail << endl;
     }
     else {
       cout << "\n# ok\n" << endl;
     }
   }
 
+  ResultsRenderer results;
+
   //
   // HARNESS
   //
-  class test {
-
+  class Tap : public Test {
     public:
-      Test harness;
-      Results results;
+
+      Tap();
+      
+      template<typename Callback>
+      Tap(const string& name, Callback cb);
 
       template<typename Callback>
-      test(const string&, Callback);
+      Tap(const string& name, Options opts, Callback cb);
   };
 
-  template<typename Callback>
-  test::test(const string& name, Callback cb) {
-
-    Options opts;
-
-    harness.name = name;
-    harness.opts = opts;
-    harness._cb = cb;
-
-    //
-    // declre the final results static because by the
-    // time `atexit` fires, everything else will have
-    // gone off-stack.
-    //
-
-    static int count = 10;
-    static int pass = 10;
-    static int fail = 0;
-
-    this->results.on("update", [&](Results res) {
-      count = res.count;
-      pass = res.pass;
-      fail = res.fail;
-    });
-
-    harness.resultsWatcher = [&](Test* child) {
-      this->results.push(*child);
-    };
-
-    static function<void()> onProcessExit;
-    
-    onProcessExit = [&]() {
-      this->results.close(count, pass, fail);
-    };
-
-    atexit([]{
-      onProcessExit();
-    });
-
-    harness.run();
+  Tap::Tap() {
+    results.watch(this);
   }
+
+  template<typename Callback>
+  Tap::Tap(const string& name, Callback cb) : 
+    Test(name, cb) {
+      results.watch(this);
+  }
+
+  template<typename Callback>
+  Tap::Tap(const string& name, Options opts, Callback cb) : 
+    Test(name, opts, cb) {
+      results.watch(this);
+  }
+
 }
 
 #endif

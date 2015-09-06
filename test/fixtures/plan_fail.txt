@@ -1,0 +1,9 @@
+TAP version 13
+# test1
+# test2
+ok 3 (unnamed assert)
+not ok 3 plan != count
+  ---
+    operator: fail
+    expected: 2
+    actual:   3

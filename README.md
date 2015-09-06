@@ -9,42 +9,40 @@ Test Anything Protocol for C++ inspired by [`tape`][0].
 #include "tap.h"
 using namespace TAP;
 
-test("example tests", [&](auto t) {
+Tap t;
 
-  t.test("test some stuff", [&](auto t) {
+t.test("test1", [&](auto t) {
+  t.ok(true, "true is true");
+  t.end();
+});
 
-    t.plan(2);
-    t.equal("foobar", "foobar");
-    t.equal(1, 100);
-  });
+t.test("test2", [&](auto t) {
 
-  t.test("more stuff", [&](auto t) {
-
-    t.ok(true, "true is true");
+  t.test("test2a", [&](auto t) {
     t.ok();
   });
 
-  t.end();
+  t.ok(false, "false is true");
 });
 ```
 
 ```
 TAP version 13
-# test one
-ok 1 should be equal
-not ok 2 should be equal
+# test1
+ok 1 true is true
+# test2
+# test2a
+ok 2 (unnamed assert)
+not ok 3 false is true
   ---
-    operator: equal
-    expected: 100
-    actual:   1
+    operator: ok
+    expected: true
+    actual:   false
   ...
-# test two
-ok 3 true is true
-ok 4 (unnamed assert)
 
-1..4
-# tests 4
-# pass  3
+1..3
+# tests 3
+# pass  2
 # fail  1
 ```
 
