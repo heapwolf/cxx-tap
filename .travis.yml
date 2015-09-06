@@ -1,0 +1,22 @@
+language: cpp
+
+script: make && make test
+
+compiler: clang
+
+os:
+  - linux
+  - osx
+
+install:
+  - if [ "$(uname)" == "Linux" ]; then sudo apt-get update && sudo apt-get install libc++-dev; fi
+
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - gcc-4.8
+    - g++-4.8
+    - clang
+
