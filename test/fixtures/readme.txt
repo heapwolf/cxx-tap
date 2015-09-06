@@ -3,17 +3,15 @@ TAP version 13
 ok 2 true is true
 # test2
 # test2a
-# test2b
-ok 6 (unnamed assert)
-ok 7 (unnamed assert)
-not ok 8 false is true
+ok 5 (unnamed assert)
+not ok 6 false is true
   ---
     operator: ok
     expected: true
     actual:   false
   ...
 
-1..8
-# tests 8
-# pass  3
+1..6
+# tests 6
+# pass  2
 # fail  1

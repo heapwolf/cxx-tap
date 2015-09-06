@@ -318,8 +318,6 @@ namespace TAP {
     if (!this->_planError && this->_plan != 0 && pendingAsserts > 0) {
       this->_planError = true;
 
-      cout << "FAIL" << endl;
-
       Options o;
       o.expected = this->_plan;
       o.actual = to_string(this->assertCount);
@@ -726,7 +724,7 @@ namespace TAP {
 
   void ResultsRenderer::close(Results r) {
 
-    if (r.plan != r.count) {
+    if (r.plan != 0 && r.plan != r.count) {
 
       string output = "";
       
