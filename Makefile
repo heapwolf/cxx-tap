@@ -20,7 +20,7 @@ Test = \
 
 all:
 	@for f in $(FILES); do \
-		echo "[building... $$f"; \
+		echo "[info] building... $$f"; \
 		clang++ $(OPTS) $$f -o $(BUILDDIR)/`basename "$$f" .cc`; \
 	done 
 

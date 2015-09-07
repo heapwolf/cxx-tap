@@ -4,11 +4,11 @@ ok 2 true is true
 # test2
 # test2a
 ok 5 (unnamed assert)
-not ok 6 false is true
+not ok 6 a float is not an int
   ---
-    operator: ok
-    expected: true
-    actual:   false
+    operator: equal
+    expected: 2
+    actual:   2.23
   ...
 
 1..6

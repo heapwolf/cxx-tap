@@ -133,9 +133,15 @@ namespace TAP {
  
       void pass(const string&); 
       void pass(const string&, Options); 
-      
-      void skip(const string& msg);
-      void skip(const string& msg, Options);
+
+      void skip(const string&);
+      void skip(const string&, Options);
+
+      template<typename Lambda>
+      void skip(const string&, Lambda);
+
+      template<typename Lambda>
+      void skip(const string&, Options, Lambda);
 
       void fail(const string&);
       void fail(const string&, Options);
@@ -144,7 +150,12 @@ namespace TAP {
       void ok(bool);
       void ok(bool, const string&);
       void ok(bool, const string&, Options);
-      
+
+      void notOk();
+      void notOk(bool);
+      void notOk(bool, const string&);
+      void notOk(bool, const string&, Options);
+
       template<typename Left, typename Right>
       void equal(const Left& l, const Right& r);
 
@@ -454,6 +465,19 @@ namespace TAP {
     this->_assert(true, o);
   }
 
+  template<typename Callback>
+  void Test::skip(const string& msg, Callback cb) {
+    Options opts;
+    opts.skip = true;
+    this->test(msg, opts, cb);
+  }
+
+  template<typename Callback>
+  void Test::skip(const string& msg, Options opts, Callback cb) {
+    opts.skip = true;
+    this->test(msg, opts, cb);
+  }
+
   void Test::ok() {
     Options extra;
     this->ok(true, "", extra);
@@ -475,6 +499,33 @@ namespace TAP {
     o.message = msg;
     o.oper = "ok";
     o.expected = "true";
+    o.actual = !value ? "false" : "true";
+    o.extra = extra;
+    this->_assert(value, o);
+  }
+
+
+  void Test::notOk() {
+    Options extra;
+    this->notOk(false, "", extra);
+  }
+
+  void Test::notOk(bool value) {
+    Options extra;
+    this->notOk(value, "", extra);
+  }
+
+  void Test::notOk(bool value, const string& msg) {
+    Options extra;
+    this->notOk(value, msg, extra);
+  }
+
+  void Test::notOk(bool value, const string& msg, Options extra) {
+
+    Options o;
+    o.message = msg;
+    o.oper = "notOk";
+    o.expected = "false";
     o.actual = !value ? "false" : "true";
     o.extra = extra;
     this->_assert(value, o);
