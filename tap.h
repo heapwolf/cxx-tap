@@ -1,6 +1,7 @@
 #ifndef TAP_H
 #define TAP_H
 
+#include <cxxabi.h>
 #include <string>
 #include <vector>
 #include <map>
@@ -531,6 +532,20 @@ namespace TAP {
     this->_assert(value, o);
   }
 
+  template<typename Type>
+  string getTypeName() {
+
+    int status;
+    string name = typeid(Type).name();
+    char *realname = abi::__cxa_demangle(name.c_str(), NULL, NULL, &status);
+
+    if (status == 0) {
+      name = realname;
+      free(realname);
+    }
+    return name;
+  }
+
   template<typename L, typename R, typename BinaryPredicate> 
   void Test::assert_equal(
     const L& l, 
@@ -542,8 +557,8 @@ namespace TAP {
       Options o;
       o.message = !msg.empty() ? msg : "should be equal";
       o.oper = "equal";
-      o.actual = stringify(l);
-      o.expected = stringify(r);
+      o.actual = stringify(l) + " (" + getTypeName<L>() + ")";
+      o.expected = stringify(r) + " (" + getTypeName<R>() + ")";
       o.extra = extra;
 
       try {
@@ -590,8 +605,8 @@ namespace TAP {
       Options o;
       o.message = !msg.empty() ? msg : "should not be equal";
       o.oper = "notEqual";
-      o.actual = stringify(l);
-      o.notExpected = stringify(r);
+      o.actual = stringify(l) + "(" + getTypeName<L>() + ")";
+      o.notExpected = stringify(r) + "(" + getTypeName<R>() + ")";
       o.extra = extra;
 
       try {

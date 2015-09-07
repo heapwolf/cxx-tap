@@ -7,8 +7,8 @@ ok 5 (unnamed assert)
 not ok 6 a float is not an int
   ---
     operator: equal
-    expected: 2
-    actual:   2.23
+    expected: 2 (int)
+    actual:   2.23 (float)
   ...
 
 1..6
