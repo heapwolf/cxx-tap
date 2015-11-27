@@ -118,7 +118,6 @@ namespace TAP {
       int _plan = 0;
       bool watched = false;
       void run();
-      //void quit();
 
       template<typename Lambda>
       void test(const string&, Lambda);
@@ -698,10 +697,9 @@ namespace TAP {
 
     t->watched = true;
 
-    //cout << "Watching " << t->name << endl;
-
     t->on("plan", [&](int n) {
-      r.plan += n;
+      if (t->name.size())
+        r.plan += n;
     });
 
     t->on("prerun", [&](Test* t) {
@@ -731,6 +729,10 @@ namespace TAP {
         r.fail++;
       }
 
+    });
+
+    t->on("end", [&](Test* t) {
+      
     });
 
     t->on("test", [&](Test* st) {
