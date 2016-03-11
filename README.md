@@ -2,7 +2,7 @@
 Test Anything Protocol for C++ inspired by [`tape`][0].
 
 # BUILD STATUS
-[![build-status](https://travis-ci.org/0xxff/cpp-spinaltap.svg)](https://travis-ci.org/0xxff/cpp-spinaltap)
+[![build-status](https://travis-ci.org/0x00a/cpp-spinaltap.svg)](https://travis-ci.org/0x00a/cpp-spinaltap)
 
 # EXAMPLE
 ```cpp
