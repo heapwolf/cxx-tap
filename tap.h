@@ -9,8 +9,8 @@
 #include <iostream>
 #include <regex>
 #include <sstream>
-#include "cc_modules/timeout@1.0.0/index.h"
-#include "cc_modules/eventemitter@2.0.0/index.h"
+#include "cc_modules/timeout/index.h"
+#include "cc_modules/eventemitter/index.h"
 
 namespace TAP {
 
@@ -320,29 +320,31 @@ namespace TAP {
       return;
     }
 
-    if (!this->ended) { 
-      this->emit("end");
-    }
-
     int pendingAsserts = this->_pendingAsserts();
 
-    if (!this->_planError && this->_plan != 0 && pendingAsserts > 0) {
+    if ((this->_plan != this->assertCount) && this->_plan != 0 && pendingAsserts > 0) {
       this->_planError = true;
 
       Options o;
-      o.expected = this->_plan;
+      o.expected = to_string(this->_plan);
       o.actual = to_string(this->assertCount);
 
       this->fail("plan != count", o);
     }
+
+    if (!this->ended) {
+      // TODO allow emit with no events registered.
+      this->on("end", [](){});
+      this->emit("end");
+    }
+
     this->ended = true;
   }
 
   int Test::_pendingAsserts() {
     if (this->_plan == 0) {
       return 0;
-    }
-    else {
+    } else {
       int len = this->progeny.size();
       int i = this->_plan - (len + this->assertCount);
       return i;

@@ -6,7 +6,7 @@ int main() {
 
   Tap t;
 
-  t.test("test1", [&](auto t) {
+  t.test("test1", [](auto t) {
     t.ok(true, "true is true");
     t.end();
   });

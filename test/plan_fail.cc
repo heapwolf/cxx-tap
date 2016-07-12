@@ -13,9 +13,11 @@ int main() {
   });
 
   t.test("test2", [&](auto t) {
+    t.plan(2);
+    t.ok();
+    t.ok();
     t.ok();
     t.end();
   });
-
 } 
 

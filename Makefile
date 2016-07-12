@@ -2,7 +2,7 @@
 TESTDIR=./test
 BUILDDIR=$(TESTDIR)/build
 FIXTURESDIR=$(TESTDIR)/fixtures
-OPTS=-std=c++1y -lpthread
+OPTS=-std=c++1z -lpthread
 TMP=./tmp.txt
 CMP=cmp --silent $(TMP)
 ERROR=echo [error]
@@ -17,7 +17,6 @@ Test = \
 	echo "[info] comparing output to fixture '$(FIXTURESDIR)/$(1).txt'"; \
 	$(CMP) $(FIXTURESDIR)/$(1).txt || $(ERROR) $(1) $(MSG) $(FIXTURESDIR)/$(1).txt \
 	$(RM)
-
 
 build:
 	@for f in $(FILES); do \

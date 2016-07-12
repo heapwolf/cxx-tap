@@ -1,0 +1,6 @@
+[submodule "cc_modules/eventemitter"]
+	path = cc_modules/eventemitter
+	url = https://github.com/0x00A/cxx-eventemitter.git
+[submodule "cc_modules/timeout"]
+	path = cc_modules/timeout
+	url = https://github.com/0x00A/cxx-timeout.git

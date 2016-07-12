@@ -1,12 +1,16 @@
 {
   "name": "spinaltap",
-  "version": "1.1.0",
-  "url": "https://github.com/hij1nx/cpp-spinaltap",
+  "version": "2.1.0",
+  "url": "https://github.com/hij1nx/cxx-spinaltap",
   "scripts": {
     "test": "make test all"
   },
   "dependencies": {
-    "hij1nx/timeout": "1.0.0",
-    "hij1nx/eventemitter": "2.0.0"
+    "eventemitter": {
+      "https://github.com/0x00A/cxx-eventemitter.git": "*"
+    },
+    "timeout": {
+      "https://github.com/0x00A/cxx-timeout.git": "*"
+    }
   }
 }
