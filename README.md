@@ -14,7 +14,7 @@ build add heapwolf/cxx-tap
 # TEST
 
 ```bash
-build run test
+build test
 ```
 
 

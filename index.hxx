@@ -45,9 +45,8 @@ namespace TAP {
     static bool finished;
     static bool started;
     static int idIndex;
-    static int assertionIndex;
-    static int expected;
-    static int actual;
+    static int assertionsPassing;
+    static int assertionsTotal;
 
     bool asserts (bool value, const String& oper, const String& actual,
       const String& expected, const String& message);
@@ -100,9 +99,9 @@ namespace TAP {
   bool Test::finished = false;
   bool Test::started = false;
   int Test::idIndex = 0;
-  int Test::assertionIndex = 1;
-  int Test::expected = 0;
-  int Test::actual = 0;
+
+  int Test::assertionsTotal = 0;
+  int Test::assertionsPassing = 0;
 
   void failedFinalEnd () {
     std::cout << "End of tests never reached." << std::endl;
@@ -128,8 +127,6 @@ namespace TAP {
 
     t->id = ++Test::idIndex;
 
-    ++Test::expected;
-
     callback(t);
 
     if (t->ended == 0) {
@@ -152,10 +149,6 @@ namespace TAP {
 
     if (assertionsFailed > 0) {
       return;
-    }
-
-    if (t->id > 0) {
-      ++Test::actual;
     }
   }
 
@@ -219,17 +212,16 @@ namespace TAP {
 
     cout
       << endl
-      << "1.." << Test::expected << endl
-      << "# tests " << Test::expected << endl
-      << "# pass  " << Test::actual;
+      << "1.." << Test::assertionsTotal << endl
+      << "# tests " << Test::assertionsTotal << endl
+      << "# pass  " << Test::assertionsPassing;
 
-    if (Test::expected != Test::actual) {
-      auto failed = Test::expected - Test::actual;
-      cout << endl << "# fail  " << failed  << endl;
+    if (Test::assertionsPassing != Test::assertionsTotal) {
+      const auto failing = Test::assertionsTotal - Test::assertionsPassing;
+      cout << endl << "# fail  " << failing << endl;
     } else {
-      cout << endl << "\n# ok\n" << endl;
+      cout << endl << "# ok\n" << endl;
     }
-
   }
 
   bool Test::asserts (
@@ -240,7 +232,7 @@ namespace TAP {
     const String& message) {
 
     using namespace std;
-    const int id = Test::assertionIndex++;
+    const int id = (Test::assertionsTotal++) + 1;
     String status = "not ok";
 
     this->assertionsMade++;
@@ -257,6 +249,7 @@ namespace TAP {
     if (value == true) {
       status = "ok";
       this->assertionsPassed++;
+      Test::assertionsPassing++;
     }
 
     cout << endl << status << " " << id << " - " << message;

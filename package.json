@@ -9,8 +9,7 @@
     "test": [
       "clang++ -std=c++2a",
       "-O1 -g -fsanitize=address -fno-omit-frame-pointer",
-      "test/index.cxx -o test/index &&",
-      "ASAN_OPTIONS=detect_leaks=1 ./test/index"
+      "test/index.cxx -o test/index && ./test/index"
     ]
   },
   "files": [
