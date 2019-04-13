@@ -3,13 +3,18 @@
 int main () {
   TAP::Test t;
 
-  t.test("Hello", [&](auto t) {
-    t->ok(true, "true is true");
-    t->end(); // t is not automatically called for children.
+  t.test("Bazz", [&](auto a) {
+    a->ok(true, "true is true");
+
+    a->test("Quxx", [&] (auto b) {
+      b->ok(true, "nested");
+      b->end();
+      a->end();
+    });
   });
 
   t.test("Hello", [&](auto t) {
-    t->ok(false, "true is true");
+    t->ok(false, "true is also true");
     t->end(); // t is not automatically called for children.
   });
 

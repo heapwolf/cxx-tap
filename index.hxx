@@ -44,6 +44,8 @@ namespace TAP {
 
     static bool finished;
     static bool started;
+    static int idIndex;
+    static int assertionIndex;
 
     bool asserts (bool value, const String& oper, const String& actual,
       const String& expected, const String& message);
@@ -95,6 +97,8 @@ namespace TAP {
 
   bool Test::finished = false;
   bool Test::started = false;
+  int Test::idIndex = 0;
+  int Test::assertionIndex = 1;
 
   void failedFinalEnd () {
     std::cout << "End of tests never reached." << std::endl;
@@ -115,10 +119,7 @@ namespace TAP {
       });
     }
 
-    if (this->id == 0) {
-      t->id = this->id + 1;
-    } 
-
+    t->id = ++Test::idIndex;
     this->testsExpected++;
 
     t->name = name;
@@ -232,15 +233,17 @@ namespace TAP {
     const String& actual,
     const String& expected,
     const String& message) {
-    this->assertionsMade++;
+
+    const int id = Test::assertionIndex++;
     String status = "not ok";
+
+    this->assertionsMade++;
 
     if (this->testsSkip > 0) {
       this->testsSkip -= 1;
       this->assertionsPassed += 1;
 
-      auto no = this->assertionsExpected + 1;
-      std::cout << "ok " << no << " #SKIP" << message << "\n";
+      std::cout << "ok " << id << " #SKIP" << message << "\n";
 
       return true;
     }
@@ -250,10 +253,7 @@ namespace TAP {
       this->assertionsPassed++;
     }
 
-    std::cout
-      << status << " "
-      << this->assertionsExpected + 1 << " "
-      << message << std::endl;
+    std::cout << status << " " << id << " " << message << std::endl;
 
     if (value == false) {
       StringStream ss;
