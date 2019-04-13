@@ -57,15 +57,15 @@ int main () {
 
 ```tap
 TAP version 13
-ok 1 true is true
-ok 2 nested
-not ok 3 a float is not an int
+ok 1 - true is true
+ok 2 - nested
+not ok 3 - a float is not an int
   ---
   operator: equal
   expected: 2
   actual:   2.23
   ...
-not ok 4 true is also true
+not ok 4 - true is also true
   ---
   operator: ok
   expected: false

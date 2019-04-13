@@ -249,7 +249,7 @@ namespace TAP {
       this->testsSkip -= 1;
       this->assertionsPassed += 1;
 
-      cout << endl << "ok " << id << " # SKIP" << message;
+      cout << endl << "ok " << id << " - # SKIP" << message;
 
       return true;
     }
@@ -259,7 +259,7 @@ namespace TAP {
       this->assertionsPassed++;
     }
 
-    cout << endl << status << " " << id << " " << message;
+    cout << endl << status << " " << id << " - " << message;
 
     if (value == false) {
       StringStream ss;
