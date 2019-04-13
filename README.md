@@ -2,10 +2,6 @@
 Test Anything Protocol for `C++`.
 
 
-# BUILD STATUS
-[![build-status](https://travis-ci.org/heapwolf/cxx-tap.svg)](https://travis-ci.org/heapwolf/cxx-tap)
-
-
 # USAGE
 This module is designed to work with the [`datcxx`][0] build tool. To add this
 module to your project us the following command...
