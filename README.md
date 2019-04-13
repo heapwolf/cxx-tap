@@ -25,31 +25,31 @@ build run test
 ```c++
 #include "deps/heapwolf/cxx-tap/index.hxx"
 
-using namespace TAP;
+int main () {
+  TAP::Test t;
 
-int main() {
+  t.test("Bazz", [&](auto a) {
+    a->ok(true, "true is true");
 
-  Test t;
-
-  t.test("test1", [&](auto t) {
-
-    t->ok(true, "true is true");
-    t->end(); // t is not automatically called for children.
+    a->test("Quxx", [&] (auto b) {
+      b->ok(true, "nested");
+      b->end();
+      a->end();
+    });
   });
 
-  t.test("test2", [&](auto t) {
-
-    t->test("test2a", [&](auto t) {
-      t->ok();
-    });
+  t.test("Foo", [&](auto t) {
 
     float a = 2.23;
     int b = 2;
 
     t->equal(a, b, "a float is not an int");
+
+    t->ok(false, "true is also true");
+    t->end(); // t is not automatically called for children.
   });
 
-  // t.end(); // is automatically called by t's destructor :)
+  // t.end(); // is automatically called by t's destructor.
 }
 ```
 
@@ -57,19 +57,22 @@ int main() {
 
 ```tap
 TAP version 13
-# test1
-ok 2 true is true
-# test2
-# test2a
-ok 5 (unnamed assert)
-not ok 6 a float is not an int
+ok 1 true is true
+ok 2 nested
+not ok 3 a float is not an int
   ---
-    operator: equal
-    expected: 2
-    actual:   2.23
+  operator: equal
+  expected: 2
+  actual:   2.23
   ...
-1..6
-# tests 6
+not ok 4 true is also true
+  ---
+  operator: ok
+  expected: false
+  actual:   true
+  ...
+1..3
+# tests 3
 # pass  2
 # fail  1
 ```

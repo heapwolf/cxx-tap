@@ -221,11 +221,11 @@ namespace TAP {
       << endl
       << "1.." << Test::expected << endl
       << "# tests " << Test::expected << endl
-      << "# pass  " << Test::actual << endl;
+      << "# pass  " << Test::actual;
 
     if (Test::expected != Test::actual) {
       auto failed = Test::expected - Test::actual;
-      cout << endl << "# fail " << failed  << endl;
+      cout << endl << "# fail  " << failed  << endl;
     } else {
       cout << endl << "\n# ok\n" << endl;
     }
