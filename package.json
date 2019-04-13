@@ -1,9 +1,23 @@
 {
-  "name": "spinaltap",
-  "version": "1.1.0",
-  "url": "https://github.com/hij1nx/cpp-spinaltap",
+  "name": "tap",
+  "description": "test anything protocol for c++",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:heapwolf/cxx-tap.git"
+  },
+  "scripts": {
+    "test": [
+      "clang++ -std=c++2a",
+      "-O1 -g -fsanitize=address -fno-omit-frame-pointer",
+      "test/index.cxx -o test/index &&",
+      "ASAN_OPTIONS=detect_leaks=1 ./test/index"
+    ]
+  },
+  "files": [
+    "index.hxx"
+  ],
   "dependencies": {
-    "timeout": "1.0.0",
-    "eventemitter": "2.0.0"
+    "git@github.com:datcxx/cxx-timers": "7d2ff2b7",
+    "git@github.com:datcxx/cxx-eventemitter": "63d10af1"
   }
 }
