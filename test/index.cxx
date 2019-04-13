@@ -13,7 +13,13 @@ int main () {
     });
   });
 
-  t.test("Hello", [&](auto t) {
+  t.test("Foo", [&](auto t) {
+
+    float a = 2.23;
+    int b = 2;
+
+    t->equal(a, b, "a float is not an int");
+
     t->ok(false, "true is also true");
     t->end(); // t is not automatically called for children.
   });

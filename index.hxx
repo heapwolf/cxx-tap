@@ -46,6 +46,8 @@ namespace TAP {
     static bool started;
     static int idIndex;
     static int assertionIndex;
+    static int expected;
+    static int actual;
 
     bool asserts (bool value, const String& oper, const String& actual,
       const String& expected, const String& message);
@@ -99,6 +101,8 @@ namespace TAP {
   bool Test::started = false;
   int Test::idIndex = 0;
   int Test::assertionIndex = 1;
+  int Test::expected = 0;
+  int Test::actual = 0;
 
   void failedFinalEnd () {
     std::cout << "End of tests never reached." << std::endl;
@@ -112,18 +116,19 @@ namespace TAP {
     if (!Test::started) {
       Test::started = true;
 
-      std::cout << "TAP version 13" << std::endl;
+      std::cout << "TAP version 13";
 
       atexit([]{
         if (!Test::finished) failedFinalEnd();
       });
     }
 
-    t->id = ++Test::idIndex;
-    this->testsExpected++;
-
     t->name = name;
     t->parent = this;
+
+    t->id = ++Test::idIndex;
+
+    ++Test::expected;
 
     callback(t);
 
@@ -150,7 +155,7 @@ namespace TAP {
     }
 
     if (t->id > 0) {
-      t->parent->testsActual++;
+      ++Test::actual;
     }
   }
 
@@ -214,15 +219,15 @@ namespace TAP {
 
     cout
       << endl
-      << "1.." << this->testsExpected << endl
-      << "# tests " << this->testsExpected << endl
-      << "# pass  " << this->testsActual << endl;
+      << "1.." << Test::expected << endl
+      << "# tests " << Test::expected << endl
+      << "# pass  " << Test::actual << endl;
 
-    if (this->testsExpected != this->testsActual) {
-      auto failed = this->testsExpected - this->testsActual;
-      cout << "\n# fail " << failed  << endl;
+    if (Test::expected != Test::actual) {
+      auto failed = Test::expected - Test::actual;
+      cout << endl << "# fail " << failed  << endl;
     } else {
-      cout << "\n# ok\n" << endl;
+      cout << endl << "\n# ok\n" << endl;
     }
 
   }
@@ -234,6 +239,7 @@ namespace TAP {
     const String& expected,
     const String& message) {
 
+    using namespace std;
     const int id = Test::assertionIndex++;
     String status = "not ok";
 
@@ -243,7 +249,7 @@ namespace TAP {
       this->testsSkip -= 1;
       this->assertionsPassed += 1;
 
-      std::cout << "ok " << id << " #SKIP" << message << "\n";
+      cout << endl << "ok " << id << " # SKIP" << message;
 
       return true;
     }
@@ -253,18 +259,19 @@ namespace TAP {
       this->assertionsPassed++;
     }
 
-    std::cout << status << " " << id << " " << message << std::endl;
+    cout << endl << status << " " << id << " " << message;
 
     if (value == false) {
       StringStream ss;
 
-      ss << "  ---\n";
-      ss << "  operator: " << oper << "\n";
-      ss << "  expected: " << expected << "\n";
-      ss << "  actual:   " << actual << "\n";
+      ss << endl;
+      ss << "  ---" << endl;
+      ss << "  operator: " << oper << endl;
+      ss << "  expected: " << expected << endl;
+      ss << "  actual:   " << actual << endl;
       ss << "  ...";
 
-      std::cout << ss.str();
+      cout << ss.str();
     }
 
     return value;
@@ -278,7 +285,7 @@ namespace TAP {
     String expected = stringify(r);
 
     try {
-      this->asserts(!p(l, r), "equal", actual, expected, message);
+      this->asserts(p(l, r), "equal", actual, expected, message);
     } catch(const std::exception& e) {
       this->fail(e.what());
     } catch(...) {
