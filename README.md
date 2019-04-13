@@ -78,3 +78,5 @@ not ok 6 a float is not an int
 # pass  2
 # fail  1
 ```
+
+[0]:https://github.com/datcxx/build
