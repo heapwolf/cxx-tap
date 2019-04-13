@@ -1,5 +1,5 @@
 # SYNOPSIS
-Test Anything Protocol for `C++`.
+Test Anything Protocol for `C++` based on the [TAP 13][1] Spec.
 
 
 # USAGE
@@ -55,7 +55,7 @@ int main() {
 
 ### OUTPUT
 
-```
+```tap
 TAP version 13
 # test1
 ok 2 true is true
@@ -68,7 +68,6 @@ not ok 6 a float is not an int
     expected: 2
     actual:   2.23
   ...
-
 1..6
 # tests 6
 # pass  2
@@ -76,3 +75,4 @@ not ok 6 a float is not an int
 ```
 
 [0]:https://github.com/datcxx/build
+[1]:https://testanything.org/tap-version-13-specification.html

@@ -30,6 +30,7 @@ namespace TAP {
 
     int testsExpected = 0;
     int testsActual = 0;
+    int testsSkip = 0;
 
     int hasPlan = false;
     int assertionsExpected = 0;
@@ -60,7 +61,7 @@ namespace TAP {
         void test(const String&, Lambda);
 
       void summarize();
-
+      void bailout(const String&);
       void end();
       void plan(int);
       void timeoutAfter(int);
@@ -182,8 +183,12 @@ namespace TAP {
   }
 
   void Test::skip (int number, const String& msg) {
-    this->assertionsExpected -= number;
+    this->testsSkip = number;
     this->comment(msg);
+  }
+
+  void Test::bailout (const String& msg = "") {
+    std::cout << "Bail out! " << msg << std::endl;
   }
 
   void Test::comment (const String& msg) {
@@ -215,8 +220,7 @@ namespace TAP {
     if (this->testsExpected != this->testsActual) {
       auto failed = this->testsExpected - this->testsActual;
       cout << "\n# fail " << failed  << endl;
-    }
-    else {
+    } else {
       cout << "\n# ok\n" << endl;
     }
 
@@ -231,6 +235,16 @@ namespace TAP {
     this->assertionsMade++;
     String status = "not ok";
 
+    if (this->testsSkip > 0) {
+      this->testsSkip -= 1;
+      this->assertionsPassed += 1;
+
+      auto no = this->assertionsExpected + 1;
+      std::cout << "ok " << no << " #SKIP" << message << "\n";
+
+      return true;
+    }
+
     if (value == true) {
       status = "ok";
       this->assertionsPassed++;
@@ -238,16 +252,17 @@ namespace TAP {
 
     std::cout
       << status << " "
-      << this->assertionsExpected << " "
+      << this->assertionsExpected + 1 << " "
       << message << std::endl;
 
     if (value == false) {
       StringStream ss;
 
-      ss << "---\n";
+      ss << "  ---\n";
       ss << "  operator: " << oper << "\n";
       ss << "  expected: " << expected << "\n";
       ss << "  actual:   " << actual << "\n";
+      ss << "  ...";
 
       std::cout << ss.str();
     }
