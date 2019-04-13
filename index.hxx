@@ -40,7 +40,9 @@ namespace TAP {
     int ended = 0;
     String name = "(unnamed test)";
     Test* parent;
+
     static bool finished;
+    static bool started;
 
     bool asserts (bool value, const String& oper, const String& actual,
       const String& expected, const String& message);
@@ -91,6 +93,7 @@ namespace TAP {
   };
 
   bool Test::finished = false;
+  bool Test::started = false;
 
   void failedFinalEnd () {
     std::cout << "End of tests never reached." << std::endl;
@@ -101,11 +104,9 @@ namespace TAP {
   void Test::test (const String& name, Lambda callback) {
     std::shared_ptr<Test> t = std::make_shared<Test>();
 
-    t->name = name;
-    this->testsExpected++;
+    if (!Test::started) {
+      Test::started = true;
 
-    if (this->id == 0) {
-      t->id = this->id + 1;
       std::cout << "TAP version 13" << std::endl;
 
       atexit([]{
@@ -113,6 +114,13 @@ namespace TAP {
       });
     }
 
+    if (this->id == 0) {
+      t->id = this->id + 1;
+    } 
+
+    this->testsExpected++;
+
+    t->name = name;
     t->parent = this;
 
     callback(t);
@@ -205,7 +213,8 @@ namespace TAP {
       << "# pass  " << this->testsActual << endl;
 
     if (this->testsExpected != this->testsActual) {
-      cout << "\n# fail\n" << endl;
+      auto failed = this->testsExpected - this->testsActual;
+      cout << "\n# fail " << failed  << endl;
     }
     else {
       cout << "\n# ok\n" << endl;
