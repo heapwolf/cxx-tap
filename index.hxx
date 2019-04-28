@@ -199,7 +199,7 @@ namespace TAP {
     comment = regex_replace(comment, makeComment, String(""));
     comment = regex_replace(comment, makeTrim, String(""));
 
-    std::cout << comment << std::endl;
+    std::cout << std::endl << "# " << comment;
   }
 
   void Test::plan (int n) {
