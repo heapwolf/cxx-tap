@@ -1,7 +1,6 @@
 #include "../index.hxx"
-#include "../stacktrace.hxx"
-
-#include <csignal>
+// #include "../stacktrace.hxx"
+// #include <csignal>
 
 int main () {
   TAP::Test t;
@@ -17,19 +16,19 @@ int main () {
   });
 
   t.test("Foo", [&](auto t) {
-
     float a = 2.23;
     int b = 2;
 
     t->comment("this is a comment");
-    t->equal(a, b, "a float is not an int");
+
+    t->notEqual(a, b, "a float is not an int");
+    t->equal(a, 2.23, "a float is a float");
 
     //
     // For stacktrace testing...
     //
     // std::raise(SIGSEGV);
 
-    t->ok(false, "true is also true");
     t->end(); // t is not automatically called for children.
   });
 

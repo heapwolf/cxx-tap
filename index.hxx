@@ -8,7 +8,7 @@
 #include <iostream>
 #include <regex>
 #include <sstream>
-#include "deps/datcxx/cxx-timers/index.hxx"
+#include "deps/datcxx/timers/index.hxx"
 #include "deps/datcxx/cxx-eventemitter/index.hxx"
 
 namespace TAP {
@@ -126,6 +126,8 @@ namespace TAP {
     t->parent = this;
 
     t->id = ++Test::idIndex;
+
+    this->comment(name);
 
     callback(t);
 

@@ -17,7 +17,7 @@
     "index.hxx"
   ],
   "dependencies": {
-    "git@github.com:datcxx/cxx-timers": "7d2ff2b7",
+    "git@github.com:datcxx/timers": "7d2ff2b7",
     "git@github.com:datcxx/cxx-eventemitter": "63d10af1"
   }
 }
