@@ -96,20 +96,20 @@ namespace TAP {
       }
   };
 
-  bool Test::finished = false;
-  bool Test::started = false;
-  int Test::idIndex = 0;
+  inline bool Test::finished = false;
+  inline bool Test::started = false;
+  inline int Test::idIndex = 0;
 
-  int Test::assertionsTotal = 0;
-  int Test::assertionsPassing = 0;
+  inline int Test::assertionsTotal = 0;
+  inline int Test::assertionsPassing = 0;
 
-  void failedFinalEnd () {
+  inline void failedFinalEnd () {
     std::cout << "End of tests never reached." << std::endl;
     exit(1);
   }
 
   template<typename Lambda>
-  void Test::test (const String& name, Lambda callback) {
+  inline void Test::test (const String& name, Lambda callback) {
     std::shared_ptr<Test> t = std::make_shared<Test>();
 
     if (!Test::started) {
@@ -154,7 +154,7 @@ namespace TAP {
     }
   }
 
-  void Test::end () {
+  inline void Test::end () {
     this->ended++;
 
     if (this->id == 0 && this->ended == 1) {
@@ -163,36 +163,36 @@ namespace TAP {
     }
   }
 
-  void Test::ok () {
+  inline void Test::ok () {
     this->ok(true, "");
   }
 
-  void Test::ok (bool value) {
+  inline void Test::ok (bool value) {
     this->ok(value, "");
   }
 
-  void Test::ok (bool value, const String& msg) {
+  inline void Test::ok (bool value, const String& msg) {
     this->asserts(value, "ok", "true", "false", msg);
   }
 
-  void Test::pass (const String& msg) {
+  inline void Test::pass (const String& msg) {
     this->asserts(true, "pass", "", "", msg);
   }
 
-  void Test::fail (const String& msg) {
+  inline void Test::fail (const String& msg) {
     this->asserts(false, "fail", "", "", msg);
   }
 
-  void Test::skip (int number, const String& msg) {
+  inline void Test::skip (int number, const String& msg) {
     this->testsSkip = number;
     this->comment(msg);
   }
 
-  void Test::bailout (const String& msg = "") {
+  inline void Test::bailout (const String& msg = "") {
     std::cout << "Bail out! " << msg << std::endl;
   }
 
-  void Test::comment (const String& msg) {
+  inline void Test::comment (const String& msg) {
     String comment = msg;
 
     std::regex makeComment = std::regex("^#\\s*");
@@ -204,12 +204,12 @@ namespace TAP {
     std::cout << std::endl << "# " << comment;
   }
 
-  void Test::plan (int n) {
+  inline void Test::plan (int n) {
     this->hasPlan = true;
     this->assertionsExpected = n;
   }
 
-  void Test::summarize () {
+  inline void Test::summarize () {
     using namespace std;
 
     cout
@@ -226,7 +226,7 @@ namespace TAP {
     }
   }
 
-  bool Test::asserts (
+  inline bool Test::asserts (
     bool value,
     const String& oper,
     const String& actual,
@@ -273,7 +273,7 @@ namespace TAP {
   }
 
   template<typename L, typename R, typename BinaryPredicate> 
-  void Test::assert_equal(const L& l, const R& r, const String& msg, BinaryPredicate p) {
+  inline void Test::assert_equal(const L& l, const R& r, const String& msg, BinaryPredicate p) {
 
     String message = !msg.empty() ? msg : "should be equal";
     String actual = stringify(l);
@@ -289,18 +289,18 @@ namespace TAP {
   }
 
   template<typename Left, typename Right>
-  void Test::equal (const Left& l, const Right& r) {
+  inline void Test::equal (const Left& l, const Right& r) {
     String msg;
     this->assert_equal(l, r, msg, std::equal_to<Left>());
   }
 
   template<typename Left, typename Right>
-  void Test::equal(const Left& l, const Right& r, const String& msg) {
+  inline void Test::equal(const Left& l, const Right& r, const String& msg) {
     this->assert_equal (l, r, msg, std::equal_to<Left>());
   }
 
   template<typename L, typename R, typename BinaryPredicate> 
-  void Test::assert_notEqual (const L& l, const R& r, const String& msg, BinaryPredicate p) {
+  inline void Test::assert_notEqual (const L& l, const R& r, const String& msg, BinaryPredicate p) {
 
     String message = !msg.empty() ? msg : "should not be equal";
     String actual = stringify(l);
@@ -316,13 +316,13 @@ namespace TAP {
   }
 
   template<typename Left, typename Right>
-  void Test::notEqual (const Left& l, const Right& r) {
+  inline void Test::notEqual (const Left& l, const Right& r) {
     String msg;
     this->assert_notEqual(l, r, msg, std::equal_to<Left>());
   }
 
   template<typename Left, typename Right>
-  void Test::notEqual (const Left& l, const Right& r, const String& msg) {
+  inline void Test::notEqual (const Left& l, const Right& r, const String& msg) {
     this->assert_notEqual(l, r, msg, std::equal_to<Left>());
   }
 }
