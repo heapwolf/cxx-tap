@@ -1,0 +1,6 @@
+[submodule "deps/timers"]
+	path = deps/datcxx/timers
+	url = https://github.com/xloem/timers
+[submodule "deps/eventemitter"]
+	path = deps/datcxx/cxx-eventemitter
+	url = https://github.com/xloem/eventemitter
